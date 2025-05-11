@@ -4,10 +4,13 @@
       <div class="header-left">
         <img src="/newicon.png" class="icon" alt="icon" />
         <div>
-          <h1>중복 단어 & 금칙어 분석기</h1>
+          <h1>N블로그 도우미</h1>
         </div>
       </div>
-      <button @click="analyze" class="analyze-btn">분석 시작</button>
+      <div class="button-group">
+        <button @click="copy" class="copy-btn">복사</button>
+        <button @click="analyze" class="analyze-btn">분석 시작</button>
+      </div>
     </header>
 
     <section v-if="result" class="result-box">
@@ -45,29 +48,68 @@
 
 <script setup>
 import { ref } from 'vue'
+
 const forbiddenWords = [
   // 성인/음란
-  "보지", "자위", "야동", "성기", "섹스", "성인용", "에로", "AV", "노모",
+  '보지', '자위', '야동', '성기', '섹스', '성인용', '에로', 'AV', '노모',
 
   // 의료/건강 오인
-  "완치", "부작용 없음", "100% 치료", "즉시 효과", "지방흡입", "모공축소", "다이어트약",
+  '완치', '부작용 없음', '100% 치료', '즉시 효과', '지방흡입', '모공축소', '다이어트약',
 
   // 허위/과장 광고
-  "100% 할인", "전액 환불", "무료 제공", "가짜 후기", "정품 인증", "최저가 보장",
+  '100% 할인', '전액 환불', '무료 제공', '가짜 후기', '정품 인증', '최저가 보장',
 
   // 불법/위법
-  "대마", "마약", "불법", "도박", "총판", "토토", "성범죄", "몰카"
-];
+  '대마', '마약', '불법', '도박', '총판', '토토', '성범죄', '몰카'
+]
 const result = ref(null)
+
+function copy(){
+  chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+    chrome.tabs.sendMessage(tab.id, { type: 'GET_EDITOR_TEXT' }, (res) => {
+      if (res?.text) {
+        copyToClipboard(res.text)
+      }
+    })
+  })
+}
+function copyToClipboard(text) {
+  if (!text) return;
+
+  // 우선 modern clipboard API 시도
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard
+    .writeText(text)
+    .then(() => console.log('📋 복사 성공:', text))
+    .catch(err => {
+      console.warn('⚠️ navigator.clipboard 실패, polyfill로 fallback:', err);
+      fallbackCopyText(text);
+    });
+  } else {
+    // HTTP 환경이거나, 구형 브라우저면 바로 fallback
+    fallbackCopyText(text);
+  }
+}
+
+function fallbackCopyText(text) {
+  const tempInput = document.createElement('input');
+  tempInput.value = text;
+  document.body.appendChild(tempInput);
+  tempInput.select();
+  tempInput.setSelectionRange(0, 99999); // 모바일 대응
+  document.execCommand('copy');
+  document.body.removeChild(tempInput);
+  console.log('📋 (fallback) 복사 성공:', text);
+}
 
 function analyze() {
   chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
     chrome.tabs.sendMessage(tab.id, { type: 'GET_EDITOR_TEXT' }, (res) => {
       if (res?.text) {
-        result.value = analyzeText(res.text);
+        result.value = analyzeText(res.text)
       }
-    });
-  });
+    })
+  })
 //  console.log('gg')
 //  result.value = analyzeText(
 //    `오늘은 정말 특별한 다이어트약을 소개하려고 해요!
@@ -86,31 +128,31 @@ function analyze() {
 function analyzeText(raw) {
   const cleaned = raw
   .replace(/[^가-힣a-zA-Z0-9\s]/g, '') // 특수문자 제거
-  .trim();
+  .trim()
 
   const words = cleaned
   .split(/\s+/)
-  .filter(w => w.length >= 2);
+  .filter(w => w.length >= 2)
 
-  const freqMap = {};
+  const freqMap = {}
   words.forEach(word => {
-    freqMap[word] = (freqMap[word] || 0) + 1;
-  });
+    freqMap[word] = (freqMap[word] || 0) + 1
+  })
 
-  const sorted = Object.entries(freqMap).sort((a, b) => b[1] - a[1]);
+  const sorted = Object.entries(freqMap).sort((a, b) => b[1] - a[1])
 
-  const badMap = new Map();
+  const badMap = new Map()
   forbiddenWords.forEach(word => {
-    const regex = new RegExp(word, 'g');
-    const match = raw.match(regex);
-    if (match) badMap.set(word, match.length);
-  });
+    const regex = new RegExp(word, 'g')
+    const match = raw.match(regex)
+    if (match) badMap.set(word, match.length)
+  })
 
   return {
     words: sorted,
     badWords: [...badMap.entries()],
     length: raw.length
-  };
+  }
 }
 </script>
 
@@ -157,6 +199,16 @@ $box-border: #ddd;
         color: #555;
         margin: 0;
       }
+    }
+
+    .copy-btn {
+      background-color: #eee2d3;
+      border: none;
+      padding: 8px 12px;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 6px;
+      margin-right: 4px;
     }
 
     .analyze-btn {

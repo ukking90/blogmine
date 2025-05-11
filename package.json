@@ -1,14 +1,15 @@
 {
   "name": "blogmine",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "rm -rf dist && vite build && cp src/content/content.js dist/content.js",
+    "build": "pnpm run sync-version && rm -rf dist && vite build && cp src/content/content.js dist/content.js",
     "preview": "vite preview",
     "lint": "eslint . --fix",
     "format": "prettier --write src/",
+    "sync-version": "node scripts/update-manifest-version.js",
     "zip": "cd dist && zip -r ../blogmine.zip . && cd ..",
     "publish": "pnpm run build && pnpm run zip && gh release create v$(node -p \"require('./package.json').version\") blogmine.zip -t \"v$(node -p \"require('./package.json').version\")\" -n \"🔖 blogmine 업데이트 릴리스\""
 
