@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Blogmine",
+  "description": "네이버 블로그 글 작성 도우미",
+  "version": "0.1.0",
+  "permissions": ["scripting", "activeTab"],
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": {
+      "16": "newicon.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://blog.naver.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "newicon.png",
+    "48": "newicon.png",
+    "128": "newicon.png"
+  }
+}
