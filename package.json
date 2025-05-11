@@ -1,6 +1,6 @@
 {
   "name": "blogmine",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,8 +10,8 @@
     "lint": "eslint . --fix",
     "format": "prettier --write src/",
     "sync-version": "node scripts/update-manifest-version.js",
-    "zip": "cd dist && zip -r ../blogmine.zip . && cd ..",
-    "publish": "pnpm run build && pnpm run zip && gh release create v$(node -p \"require('./package.json').version\") blogmine.zip -t \"v$(node -p \"require('./package.json').version\")\" -n \"🔖 blogmine 업데이트 릴리스\""
+    "zip": "cd dist && zip -r ./blogmine.zip . && cd ..",
+    "publish": "pnpm run build && pnpm run zip && gh release create v$(node -p \"require('./package.json').version\") ./dist/blogmine.zip -t \"v$(node -p \"require('./package.json').version\")\" -n \"🔖 blogmine 업데이트 릴리스\""
 
   },
   "dependencies": {

@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Blogmine",
   "description": "네이버 블로그 글 작성 도우미",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "permissions": [
     "scripting",
     "activeTab"
