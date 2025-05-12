@@ -1,0 +1,45 @@
+@use "./variables.scss" as *;
+
+.analyze-box {
+  font-size: 14px;
+
+  .section {
+    margin-bottom: 12px;
+
+    h2 {
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: $brown;
+    }
+  }
+
+  .table-box {
+    background: $lightbox;
+    border: 1px solid $box-border;
+    border-radius: 6px;
+    padding: 4px;
+    //max-height: 160px;
+    height: 254px;
+    overflow-y: auto;
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+
+      td {
+        border-bottom: 1px solid #ddd;
+        padding: 4px 8px;
+        text-align: left;
+      }
+    }
+  }
+
+  .badword-box {
+    height: 39px;
+    overflow: auto;
+    background: $lightbox;
+    border: 1px solid $box-border;
+    border-radius: 6px;
+    padding: 8px;
+  }
+}

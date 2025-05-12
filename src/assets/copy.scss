@@ -1,0 +1,87 @@
+@use "./variables.scss" as *;
+
+.copy-box {
+  position: relative;
+  font-size: 14px;
+
+  .section {
+    margin-bottom: 12px;
+
+    h2 {
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: $brown;
+      float: left;
+    }
+    .mini-copy-btn {
+      float: right;
+      background-color: #eee2d3;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: bold;
+      padding: 2px 6px 1px;
+      margin-top: -1px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+
+      &:hover {
+        background: mix(black, #eee2d3, 10%);
+      }
+    }
+  }
+
+  .copied-sticker {
+    position: absolute;
+    bottom: 32px;
+    right: 32px;
+    background: rgba(255, 0, 0, 0.1);
+    color: #c00;
+    font-weight: 900;
+    font-size: 18px;
+    border: 2px solid #c00;
+    border-radius: 6px;
+    padding: 8px 12px;
+    transform: rotate(-10deg);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    font-family: 'Arial Black', sans-serif;
+    opacity: 0;
+    animation: stamp-in 1s ease-out 0.5s forwards; // 🔥 1초 뒤 등장
+  }
+
+  @keyframes stamp-in {
+    from {
+      opacity: 0;
+      transform: scale(0.9) rotate(-10deg);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) rotate(-10deg);
+    }
+  }
+  .textarea-clean {
+    width: 100%;
+    height: 366px;
+    resize: none;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: 'Segoe UI', sans-serif;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fffefc;
+    color: #333;
+    box-sizing: border-box;
+    transition: box-shadow 0.2s ease, border 0.2s ease;
+
+    &:focus {
+      outline: none;
+      border-color: #ffcb05;
+      box-shadow: 0 0 0 2px rgba(255, 203, 5, 0.25);
+    }
+
+    &::placeholder {
+      color: #aaa;
+      font-style: italic;
+    }
+  }
+}

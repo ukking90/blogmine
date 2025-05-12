@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Blogmine",
+  "name": "몽키N블",
   "description": "네이버 블로그 글 작성 도우미",
-  "version": "0.0.3",
+  "version": "1.0.0",
   "permissions": [
     "scripting",
     "activeTab"

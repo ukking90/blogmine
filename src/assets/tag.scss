@@ -1,0 +1,74 @@
+@use './variables.scss' as *;
+
+.tag-box {
+  position: relative;
+  font-size: 14px;
+
+  .section {
+    margin-bottom: 12px;
+
+    h2 {
+      font-style: 16px;
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: $brown;
+    }
+
+    &.section--row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  }
+  .mini-refresh-btn {
+    margin-right: 6px;
+    background-color: #eee2d3;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 2px 6px 1px;
+    margin-top: -1px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: mix(black, #eee2d3, 10%);
+    }
+  }
+  .mini-copy-btn {
+    background-color: #eee2d3;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 2px 6px 1px;
+    margin-top: -1px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: mix(black, #eee2d3, 10%);
+    }
+  }
+
+  .tag-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .tag-badge {
+    cursor: pointer;
+    background-color: #eee2d3;
+    color: #4e2c16;
+    padding: 4px 8px;
+    font-size: 13px;
+    border-radius: 12px;
+    font-weight: 500;
+    &:hover {
+      background: mix(black, #eee2d3, 10%);
+    }
+  }
+}

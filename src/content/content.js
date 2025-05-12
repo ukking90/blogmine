@@ -4,10 +4,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'GET_EDITOR_TEXT') {
     const result = getFromEditorIframe()
     if (!result) {
-      sendResponse({ text: '❌ iframe 접근 또는 본문 찾기 실패' })
+      sendResponse({ text: '❌ iframe 접근 또는 본문 찾기 실패', imgCnt: 0 })
       return
     }
-    sendResponse({ text: cleanText(result) })
+
+    const cleanedText = cleanText(result.rawText)
+    sendResponse({ text: cleanedText, imgCnt: result.imageCount })
   }
   return true
 })
@@ -71,10 +73,13 @@ function getFromEditorIframe() {
   const container = iframeDoc.querySelector('.se-components-wrap')
   if (!container) return null
 
-  const clone = container.cloneNode(true);
+  const clone = container.cloneNode(true)
 
-  // 🔥 영상, 이미지 포함된 모든 하위 요소 제거
-  [...clone.querySelectorAll('*')].forEach(el => {
+  // 🎯 이미지 카운트용
+  const imageCount = clone.querySelectorAll('img').length;
+
+    // 불필요한 요소 제거
+    [...clone.querySelectorAll('*')].forEach(el => {
     const cls = el.classList
     if (
       cls.contains('se-is-empty') ||
@@ -87,15 +92,15 @@ function getFromEditorIframe() {
     }
   })
 
-// 2. 줄바꿈 마킹
-  applyLineBreaksBeforeBlocks(clone);
-//  const childNodes = [...clone.children].slice(1)
+  // 줄바꿈 삽입
+  applyLineBreaksBeforeBlocks(clone)
+
   const childNodes = [...clone.children]
   const rawText = childNodes
   .map(el => el.textContent?.trim())
   .join('\n')
 
-  return rawText
+  return { rawText, imageCount }
 }
 
 function applyLineBreaksBeforeBlocks(node) {

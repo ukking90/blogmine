@@ -4,265 +4,42 @@
       <div class="header-left">
         <img src="/newicon.png" class="icon" alt="icon" />
         <div>
-          <h1>N블로그 도우미</h1>
+          <h1>몽키<p class="header-highlight">N</p>블</h1>
         </div>
       </div>
       <div class="button-group">
-        <button @click="copy" class="copy-btn">복사</button>
-        <button @click="analyze" class="analyze-btn">분석 시작</button>
+        <button v-for="m in MENUS" :key="m.id" @click="goComponent(m)"
+                :class="[`${m.icon}-btn`, {'btn-active': currentComponentId === m.id}]">
+          {{ m.name }}
+        </button>
       </div>
     </header>
 
-    <section v-if="result" class="result-box">
-      <div class="section">
-        <h2>📏 콘텐츠 길이: <strong>{{ result.length }}</strong>자</h2>
-        <p></p>
-      </div>
-
-      <div class="section">
-        <h2>🧠 형태소 분석 결과</h2>
-        <div class="table-box">
-          <table>
-            <tbody>
-            <tr v-for="[word, count] in result.words" :key="word">
-              <td>{{ word }}</td>
-              <td>{{ count }}</td>
-            </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="section">
-        <h2>🚫 금칙어</h2>
-        <div class="badword-box">
-          <p v-if="result.badWords.length">
-            {{ result.badWords.map(([word, count]) => `${word}(${count})`).join(', ') }}
-          </p>
-          <p v-else>✅ 훌륭합니다! 금칙어가 존재하지 않습니다 ^^</p>
-        </div>
-      </div>
-    </section>
+    <component :is="currentComponent" />
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+// 각 컴퍼낸트 등록
+import { onMounted, shallowRef } from 'vue'
 
-const forbiddenWords = [
-  // 성인/음란
-  '보지', '자위', '야동', '성기', '섹스', '성인용', '에로', 'AV', '노모',
+const currentComponentId = shallowRef(null)
+const currentComponent = shallowRef(null)
 
-  // 의료/건강 오인
-  '완치', '부작용 없음', '100% 치료', '즉시 효과', '지방흡입', '모공축소', '다이어트약',
-
-  // 허위/과장 광고
-  '100% 할인', '전액 환불', '무료 제공', '가짜 후기', '정품 인증', '최저가 보장',
-
-  // 불법/위법
-  '대마', '마약', '불법', '도박', '총판', '토토', '성범죄', '몰카'
+const MENUS = [
+  { id: 1, name: '복사', icon: 'copy', component: () => import('@/components/Copy.vue') },
+  { id: 2, name: '태그', icon: 'tag', component: () => import('@/components/Tag.vue') },
+  { id: 3, name: '분석', icon: 'analyze', component: () => import('@/components/Analyze.vue') }
 ]
-const result = ref(null)
 
-function copy(){
-  chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
-    chrome.tabs.sendMessage(tab.id, { type: 'GET_EDITOR_TEXT' }, (res) => {
-      if (res?.text) {
-        copyToClipboard(res.text)
-      }
-    })
-  })
-}
-function copyToClipboard(text) {
-  if (!text) return;
-
-  // 우선 modern clipboard API 시도
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard
-    .writeText(text)
-    .then(() => console.log('📋 복사 성공:', text))
-    .catch(err => {
-      console.warn('⚠️ navigator.clipboard 실패, polyfill로 fallback:', err);
-      fallbackCopyText(text);
-    });
-  } else {
-    // HTTP 환경이거나, 구형 브라우저면 바로 fallback
-    fallbackCopyText(text);
-  }
+async function goComponent(menu) {
+  const loader = menu.component
+  const module = await loader()             // 🔥 await로 로드
+  currentComponent.value = module.default   // 🔥 default 추출해서 넣어야 Vue가 이해함
+  currentComponentId.value = menu.id
 }
 
-function fallbackCopyText(text) {
-  const tempInput = document.createElement('input');
-  tempInput.value = text;
-  document.body.appendChild(tempInput);
-  tempInput.select();
-  tempInput.setSelectionRange(0, 99999); // 모바일 대응
-  document.execCommand('copy');
-  document.body.removeChild(tempInput);
-  console.log('📋 (fallback) 복사 성공:', text);
-}
-
-function analyze() {
-  chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
-    chrome.tabs.sendMessage(tab.id, { type: 'GET_EDITOR_TEXT' }, (res) => {
-      if (res?.text) {
-        result.value = analyzeText(res.text)
-      }
-    })
-  })
-//  console.log('gg')
-//  result.value = analyzeText(
-//    `오늘은 정말 특별한 다이어트약을 소개하려고 해요!
-//이 제품은 부작용 없음은 물론, 100% 치료 효과가 있다는 말이 있을 정도로 입소문이 난 제품이에요.
-//실제로 저도 사용해보고 너무 만족했어요. 무료 제공 이벤트도 진행 중이라, 지금바로 신청하시는 걸 추천드립니다.
-//
-//다이어트약 다이어트약 다이어트약, 효과가 정말 좋았고요.
-//부작용 없음 부작용 없음 부작용 없음! 이 말이 왜 나오는지 알겠더라고요.
-//추천 추천 추천. 저도 추천하고, 친구도 추천했고, 강력 추천합니다.
-//
-//이 블로그를 통해서 더 많은 후기와 정보를 얻어가셨으면 좋겠어요!
-//최저가 보장, 정품 인증 모두 완료된 제품이라 믿고 구매하셔도 됩니다 ^^`
-//  );
-}
-
-function analyzeText(raw) {
-  const cleaned = raw
-  .replace(/[^가-힣a-zA-Z0-9\s]/g, '') // 특수문자 제거
-  .trim()
-
-  const words = cleaned
-  .split(/\s+/)
-  .filter(w => w.length >= 2)
-
-  const freqMap = {}
-  words.forEach(word => {
-    freqMap[word] = (freqMap[word] || 0) + 1
-  })
-
-  const sorted = Object.entries(freqMap).sort((a, b) => b[1] - a[1])
-
-  const badMap = new Map()
-  forbiddenWords.forEach(word => {
-    const regex = new RegExp(word, 'g')
-    const match = raw.match(regex)
-    if (match) badMap.set(word, match.length)
-  })
-
-  return {
-    words: sorted,
-    badWords: [...badMap.entries()],
-    length: raw.length
-  }
-}
+onMounted(() => {
+  goComponent(MENUS[2])
+})
 </script>
-
-<style lang="scss" scoped>
-$yellow: #ffcb05;
-$brown: #333;
-$lightbox: #fffefc;
-$box-border: #ddd;
-
-.popup-root {
-  width: 360px;
-  height: 480px;
-  overflow: hidden;
-  padding: 16px;
-  box-sizing: border-box;
-  font-family: 'Segoe UI', sans-serif;
-  background: #fffbe6;
-
-  header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-
-      .icon {
-        width: 48px;
-        height: 48px;
-      }
-
-      h1 {
-        font-size: 16px;
-        font-weight: 600;
-        color: #4e2c16;
-        margin: 0;
-      }
-
-      .subtitle {
-        font-size: 12px;
-        color: #555;
-        margin: 0;
-      }
-    }
-
-    .copy-btn {
-      background-color: #eee2d3;
-      border: none;
-      padding: 8px 12px;
-      font-weight: bold;
-      cursor: pointer;
-      border-radius: 6px;
-      margin-right: 4px;
-    }
-
-    .analyze-btn {
-      background-color: $yellow;
-      border: none;
-      padding: 8px 12px;
-      font-weight: bold;
-      cursor: pointer;
-      border-radius: 6px;
-    }
-  }
-
-  .result-box {
-    font-size: 14px;
-
-    .section {
-      margin-bottom: 12px;
-
-      h2 {
-        font-weight: bold;
-        margin-bottom: 6px;
-        color: $brown;
-      }
-    }
-
-    .table-box {
-      background: $lightbox;
-      border: 1px solid $box-border;
-      border-radius: 6px;
-      padding: 4px;
-      //max-height: 160px;
-      height: 254px;
-      overflow-y: auto;
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-
-        td {
-          border-bottom: 1px solid #ddd;
-          padding: 4px 8px;
-          text-align: left;
-        }
-      }
-    }
-
-    .badword-box {
-      height: 39px;
-      overflow: auto;
-      background: $lightbox;
-      border: 1px solid $box-border;
-      border-radius: 6px;
-      padding: 8px;
-    }
-  }
-}
-</style>
