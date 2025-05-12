@@ -9,7 +9,8 @@
   </section>
   <section v-else-if="status === 'success' && result" class="analyze-box">
     <div class="section">
-      <h2>📏 콘텐츠 길이: <strong>{{ result.length }}</strong>자&nbsp;/&nbsp;🖼️ 사진: <strong>{{ result.imgCnt }}</strong>개</h2>
+      <h2>📏 길이: <strong>{{ result.length }}</strong>({{result.trimLen}})자&nbsp;/&nbsp;🖼️ 사진: <strong>{{ result.imgCnt
+        }}</strong>개</h2>
     </div>
 
     <div class="section">
@@ -79,7 +80,7 @@ function analyze() {
   status.value = 'loading'
   if (import.meta.env.MODE === 'development') {
     result.value = analyzeText(
-      {text: `오늘은 정말 특별한 다이어트약을 소개하려고 해요!이 제품은 부작용 없음은 물론, 100% 치료 효과가 있다는 말이 있을 정도로 입소문이 난 제품이에요.실제로 저도 사용해보고 너무 만족했어요. 무료 제공 이벤트도 진행 중이라, 지금바로 신청하시는 걸 추천드립니다.다이어트약 다이어트약 다이어트약, 효과가 정말 좋았고요.부작용 없음 부작용 없음 부작용 없음! 이 말이 왜 나오는지 알겠더라고요.추천 추천 추천. 저도 추천하고, 친구도 추천했고, 강력 추천합니다.이 블로그를 통해서 더 많은 후기와 정보를 얻어가셨으면 좋겠어요!최저가 보장, 정품 인증 모두 완료된 제품이라 믿고 구매하셔도 됩니다 ^^`}
+      { text: `오늘은 정말 특별한 다이어트약을 소개하려고 해요!이 제품은 부작용 없음은 물론, 100% 치료 효과가 있다는 말이 있을 정도로 입소문이 난 제품이에요.실제로 저도 사용해보고 너무 만족했어요. 무료 제공 이벤트도 진행 중이라, 지금바로 신청하시는 걸 추천드립니다.다이어트약 다이어트약 다이어트약, 효과가 정말 좋았고요.부작용 없음 부작용 없음 부작용 없음! 이 말이 왜 나오는지 알겠더라고요.추천 추천 추천. 저도 추천하고, 친구도 추천했고, 강력 추천합니다.이 블로그를 통해서 더 많은 후기와 정보를 얻어가셨으면 좋겠어요!최저가 보장, 정품 인증 모두 완료된 제품이라 믿고 구매하셔도 됩니다 ^^` }
     )
     status.value = 'success'
   } else {
@@ -118,12 +119,13 @@ function analyzeText({ text: raw, imgCnt }) {
     const match = raw.match(regex)
     if (match) badMap.set(word, match.length)
   })
-
+  const trimmed = raw.replace(/\s/g, '')
   return {
     words: sorted,
     badWords: [...badMap.entries()],
     length: raw.length,
-    imgCnt: imgCnt || 0,
+    trimLen: trimmed.length,
+    imgCnt: imgCnt || 0
   }
 }
 

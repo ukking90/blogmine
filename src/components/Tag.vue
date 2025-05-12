@@ -43,26 +43,31 @@ const tags = ref([])
 const LOCAL_KEY = 'blogmine:tags'
 
 async function fetchTagsFromOpenRouter(text) {
-  const res = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
-    model: 'deepseek/deepseek-chat-v3-0324:free',
-    messages: [
-      {
-        role: 'system',
-        content: '너는 블로그 해시태그 추천 전문가야. 본문에서 적절한 단어 30개를 해시태그로 추천해줘. 해시태그 없이 단어만 공백 구분으로 출력해.'
-      },
-      { role: 'user', content: text }
-    ]
-  }, {
-    headers: {
-      Authorization: 'Bearer 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',
-      'Content-Type': 'application/json',
-      'HTTP-Referer': 'https://your-extension-url.com'
-    }
-  })
+  try {
+    const res = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+      model: 'deepseek/deepseek-chat-v3-0324:free',
+      messages: [
+        {
+          role: 'system',
+          content: '너는 블로그 해시태그 추천 전문가야. 본문에서 적절한 단어 30개를 해시태그로 추천해줘. 해시태그 없이 단어만 공백 구분으로 출력해.'
+        },
+        { role: 'user', content: text }
+      ]
+    }, {
+      headers: {
+        Authorization: 'Bearer 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',
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://your-extension-url.com'
+      }
+    })
 
-  return res.data.choices?.[0]?.message?.content
-  ?.split(/\s+/)
-  .filter(Boolean)
+    return res.data.choices?.[0]?.message?.content
+    ?.split(/\s+/)
+    .filter(Boolean)
+  }catch (e) {
+    console.error('태그 추천 실패:', e)
+    throw e
+  }
 }
 
 function copyTag(tag) {
@@ -82,7 +87,7 @@ function copyToClipboard(text) {
   if (navigator.clipboard && window.isSecureContext) {
     navigator.clipboard
     .writeText(text)
-    .then(() => copyStatus.value = true) // ✅ 1초 뒤에 나타남)
+    .then(() => console.log('복사완료')) // ✅ 1초 뒤에 나타남)
     .catch(err => {
       console.warn('⚠️ navigator.clipboard 실패, polyfill로 fallback:', err)
       fallbackCopyText(text)
@@ -105,15 +110,8 @@ function fallbackCopyText(text) {
 }
 
 async function refreshTags() {
-  if (!result.value?.content) return
-  try {
-    status.value = 'loading'
-    tags.value = await fetchTagsFromOpenRouter(result.value.content)
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(tags.value))
-    status.value = 'success'
-  } catch (e) {
-    status.value = 'error'
-  }
+  localStorage.removeItem(LOCAL_KEY)
+  getRecommendTag()
 }
 
 function loadFromLocalStorage() {
